@@ -11,9 +11,10 @@ mt19937 rng((int) chrono::steady_clock::now().time_since_epoch().count());
 
 // Parameters of the Genetic Algorithm
 // You only need to change stuff here to test
+// You also need to change the Cube.cpp file to change the fitness function
 
-int childPopulationSize = 120, percentageParent = 10;
-int numSeconds = 60, populationSize = 100, mutationProbability = 20, crossoverProbability = 80, crossoverPoints = 1;
+int childPopulationSize = 150, percentageParent = 10;
+int numSeconds = 1000, populationSize = 100, mutationProbability = 20, crossoverProbability = 60, crossoverPoints = 2;
 
 struct Solution 
 {
@@ -48,7 +49,7 @@ struct Solution
 };
 
 // Struct static variables
-int Solution::N = 50;
+int Solution::N = 200;
 Cube Solution::c = Cube();
 
 // Sets every gene to a random operator [0, 18)
@@ -96,21 +97,18 @@ void mutate(Solution &child) {
 // Applies crossover and mutation to the children
 void generate_children(vector<Solution> &newPopulation, Solution child1, Solution child2) {
     
-    if (rng() % 100 < crossoverProbability)
+    if (rng() % 100 < crossoverProbability) {
         crossover(child1, child2);
-    
-    if (rng() % 100 < mutationProbability)
+    }
+    else {    
         mutate(child1);
-    
-    if (rng() % 100 < mutationProbability)
         mutate(child2);
+    }
 
     newPopulation.push_back(child1);
     newPopulation.push_back(child2);
 }
 
-// Aqui tem q mudar pq o novo fitness vai de 0 a 14
-// Provavelmente o ideal é fazer algo não linear, tipo proporcional ao quadrado de 15 - fitness
 vector<Solution> generateChildren(vector<Solution> population, int populationSize)
 {
     vector<int> slicesSize, psSlicesSize;
@@ -118,7 +116,7 @@ vector<Solution> generateChildren(vector<Solution> population, int populationSiz
 
     for(int i = 0 ; i < populationSize ; i++)
     {
-        int curSlice = 15 - population[i].fitness();
+        int curSlice = (15 - population[i].fitness()) * (15 - population[i].fitness()) * (15 - population[i].fitness());
 
         slicesSize.emplace_back( curSlice );
 
@@ -191,9 +189,11 @@ Solution genetic_algorithm()
             {
                 auto elapsedTime = duration_cast<seconds>(high_resolution_clock::now() - start).count();
 
-                cout << "Found new answer after " << elapsedTime << " seconds with value " << population[i].fitness() << endl;
-            
                 answer = population[i];
+
+                answer.c.findBest(answer.x);
+
+                cout << "Found new answer after " << elapsedTime << " seconds with value " << population[i].fitness() << endl;
 
             }
         }

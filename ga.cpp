@@ -8,7 +8,7 @@ mt19937 rng((int) chrono::steady_clock::now().time_since_epoch().count());
 
 // Parameters of the Genetic Algorithm
 // You only need to change stuff here to test
-int numSeconds = 1000, populationSize = 500, mutationProbability = 20, crossoverProbability = 80, crossoverPoints = 2;
+int numSeconds = 1000, populationSize = 200, mutationProbability = 20, crossoverProbability = 80, crossoverPoints = 2;
 
 struct Solution 
 {
@@ -149,10 +149,8 @@ Solution genetic_algorithm()
         select_best(intermediate, newPopulation);  
         select_best(population, intermediate);  
 
-        int gens_best = 55;
         for (int i = 0; i < populationSize; i++)
         {
-            gens_best = min(gens_best, population[i].fitness() );
             if( answer.fitness() > population[i].fitness() )
             {
                 auto elapsedTime = duration_cast<seconds>(high_resolution_clock::now() - start).count();
@@ -167,7 +165,7 @@ Solution genetic_algorithm()
             }
         }
         gen++;
-        if (gen % 1000 == 0) cout << "generation " << gen << ' ' << gens_best << endl;
+        if (gen % 10 == 0) cout << "generation " << gen << endl;
     }
 
     return answer;

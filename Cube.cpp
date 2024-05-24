@@ -772,10 +772,10 @@ int Cube::cornerMapping() const {
 }
 
 // Maps a vector with 6 elements between 0 and 11 to an integer in the range [0, nck(12, 6) - 1]
-int calculateNck(vector<int> &pos) {
+int calculateNck(vector<int> &pos, bool eq) {
     int id = 0, ans = 0;
     for (int i = 0; i < 12; i++) {
-        if (pos[id] == i) {
+        if (pos[i] == eq) {
             id++;
             if (id == 6) break;
         }
@@ -788,7 +788,7 @@ int calculateNck(vector<int> &pos) {
 
 // Maps the first and second set of edges to an int in the range [0, nck(12, 6) * 6! * 2 ^ 6 - 1]
 pair<int, int> Cube::edgeMapping() const{
-    vector<int> permutation(12), orientation(12), positions1(6), positions2(6), perm1(6), perm2(6), orient1(6), orient2(6);
+    vector<int> permutation(12), orientation(12);
     for (int i = 0; i < 12; i++) {
         array<int, 2> colors, sortedColors;
         for (int j = 0; j < 2; j++) {
@@ -801,30 +801,23 @@ pair<int, int> Cube::edgeMapping() const{
             if (colors[j] == sortedColors[0]) orientation[i] = j;
         }
     }
-    int id1 = 0, id2 = 0;
+    int fat1 = 1, fat2 = 1, valFat1 = 0, valFat2 = 0, pwr1 = 1, pwr2 = 1, valPwr1 = 0, valPwr2 = 0;
     for (int i = 0; i < 12; i++) {
         if (permutation[i] < 6) {
-            positions1[id1] = i;
-            perm1[id1] = permutation[i];
-            orient1[id1] = orientation[i];
-            id1++;
+            valFat1 += fat1 * permutation[i];
+            fat1 *= 6;
+            valPwr1 += pwr1 * orientation[i];
+            pwr1 *= 2;
+            permutation[i] = 0;
         }
         else {
-            positions2[id2] = i;
-            perm2[id2] = permutation[i] - 6;
-            orient2[id2] = orientation[i];
-            id2++;
+            valFat2 += fat2 * (permutation[i] - 6);
+            fat2 *= 6;
+            valPwr2 += pwr2 * orientation[i];
+            pwr2 *= 2;
+            permutation[i] = 1;
         }
     }
-    int fat = 1, valFat1 = 0, valFat2 = 0, pwr = 1, valPwr1 = 0, valPwr2 = 0;
-    for (int i = 0; i < 6; i++) {
-        valFat1 += fat * perm1[i];
-        valFat2 += fat * perm2[i];
-        fat *= 6;
-        valPwr1 += pwr * orient1[i];
-        valPwr2 += pwr * orient2[i];
-        pwr *= 2;
-    }
-    int valNck1 = calculateNck(positions1), valNck2 = calculateNck(positions2);
+    int valNck1 = calculateNck(permutation, 0), valNck2 = calculateNck(permutation, 1);
     return {valNck1 * 64 * 720 + sixMap[valFat1] * 64 + valPwr1, valNck2 * 64 * 720 + sixMap[valFat2]* 64 + valPwr2};
 }
